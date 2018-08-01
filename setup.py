@@ -1,11 +1,12 @@
 from setuptools import setup
+import qiwi_api
 
 with open("README.md", "r", encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
     name="qiwi_api",
-    version="1.0",
+    version=qiwi_api.__version__,
 
     author="Helow19274",
     author_email="helow@helow19274.tk",
