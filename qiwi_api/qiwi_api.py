@@ -4,7 +4,7 @@ import datetime
 
 import requests
 
-from .enums import OPERATIONS, SOURCES, Providers
+from .enums import OPERATIONS, SOURCES, BLOCKABLE_FIELDS, Providers
 from .exceptions import ApiError, WrongToken, PermissionError
 
 
@@ -20,6 +20,7 @@ class Qiwi(object):
     :param token: Ключ доступа к api
     :type token: str
     """
+
     __slots__ = ('session', 'number')
 
     def __init__(self, token):
@@ -106,7 +107,7 @@ class Qiwi(object):
             'oms': oms
         }
 
-        return self.method(url.format(self.number), payload, 'post')
+        return self.method(url.format(self.number), payload, 'POST')
 
     def history(self, rows=10, operation='ALL', sources=None, from_date=None,
                 to_date=None, next_txn_date=None, next_txn_id=None):
@@ -215,12 +216,27 @@ class Qiwi(object):
         """ Получить информацию о транзакции
 
         :param transaction_id: Номер транзакции
-        :type transaction_id: int
+        :type transaction_id: str or int
         """
 
         url = 'payment-history/v2/transactions/{}'
 
         return self.method(url.format(transaction_id))
+
+    def get_receipt_email(self, transaction_id, email):
+        """ Отправка квитанции по транзакции transaction_id на email
+
+        :param transaction_id: Номер транзакции
+        :type transaction_id: str or int
+
+        :param email: Адрес почты для получения квитанции
+        :type email: str
+        """
+
+        url = 'payment-history/v1/transactions/{}/cheque/send'
+        payload = {'email': email}
+
+        return self.method(url.format(transaction_id), payload, method='POST')
 
     def balance(self, only_balance=False):
         """ Получить баланс кошельков
@@ -258,6 +274,65 @@ class Qiwi(object):
 
         return self.method(url.format(provider))
 
+    def fill_form(self, provider, recipient=None,
+                  amount=None, comment=None, blocked=None):
+        """ Автозаполнение платёжных форм
+
+        :param provider: id провайдера
+        :type provider: str, int or :class:`Providers`
+
+        :param recipient: Номер телефона/счета/карты пользователя
+        :type recipient: str
+
+        :param amount: Сумма в рублях. Должна быть меньше 99 999 рублей
+        :type amount: int or float
+
+        :param comment: Комментарий. Только если provider == 99 (перевод на киви-кошелёк)
+        :type comment: str
+
+        :param blocked: Неактивные поля формы. См. BLOCKABLE_FIELDS
+        :type blocked: list or str
+        """
+
+        if blocked is None:
+            blocked = []
+        elif not isinstance(blocked, list):
+            blocked = [blocked]
+
+        url = 'https://qiwi.com/payment/form/{}'
+        payload = {}
+
+        if amount:
+            if amount > 99999:
+                raise ValueError('amount must be less than 100000')
+
+            amount = str(amount).split('.')
+            payload['amountInteger'] = amount[0]
+
+            if len(amount) == 2:
+                payload['amountFraction'] = amount[1]
+
+            payload['currency'] = 643
+
+        if recipient:
+            if not hasattr(payload, 'extra'):
+                payload['extra'] = {}
+            payload["extra['account']"] = recipient
+
+        if comment:
+            if not hasattr(payload, 'extra'):
+                payload['extra'] = {}
+            payload["extra['comment']"] = comment
+
+        for x, item in enumerate(blocked):
+            if item not in BLOCKABLE_FIELDS:
+                raise ValueError('Unexpected field to block: {}'.format(item))
+
+            payload['blocked[{}]'.format(x)] = item
+
+        res = requests.Request('GET', url.format(provider), params=payload).prepare()
+        return res.url
+
     def send_qiwi(self, recipient, amount, comment=None):
         """ Перевод на кошелёк Киви
 
@@ -288,7 +363,7 @@ class Qiwi(object):
             'comment': comment
         }
 
-        json = self.method(url, payload, 'post')
+        json = self.method(url, payload, 'POST')
 
         if hasattr(json, 'message'):
             raise ApiError(json['message'])
@@ -324,7 +399,7 @@ class Qiwi(object):
         json = self.method(
             url.format(self.detect_operator(recipient)),
             payload,
-            'post'
+            'POST'
         )
 
         if hasattr(json, 'message'):
@@ -332,7 +407,7 @@ class Qiwi(object):
 
         return json
 
-    def method(self, method_name, payload=None, method='get'):
+    def method(self, method_name, payload=None, method='GET'):
         """ Вызов метода API
 
         :param method_name: Часть url после https://edge.qiwi.com/
@@ -350,9 +425,9 @@ class Qiwi(object):
         if payload is None:
             payload = {}
 
-        if method == 'get':
+        if method == 'GET':
             res = self.session.get(url, params=payload)
-        elif method == 'post':
+        elif method == 'POST':
             if isinstance(payload, dict):
                 payload = json.dumps(payload, ensure_ascii=False)
 
@@ -374,10 +449,11 @@ class Qiwi(object):
 
         url = 'https://qiwi.com/mobile/detect.action'
 
-        self.session.headers['Content-type'] = 'application/x-www-form-urlencoded'
-        res = self.session.post(url, data={'phone': number})
-        self.session.headers['Content-type'] = 'application/json'
-        json = res.json()
+        json = self.session.post(
+            url,
+            data={'phone': number},
+            headers={'Content-type': 'application/x-www-form-urlencoded'}
+        ).json()
 
         if json['code']['value'] == '2':
             raise ApiError('Can\'t detect phone operator')

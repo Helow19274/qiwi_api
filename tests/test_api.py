@@ -88,6 +88,21 @@ class TestApi(unittest.TestCase):
             0
         )
 
+    def test_fill_form(self):
+        res = self.api.fill_form(
+            99,
+            amount=12.74,
+            comment='test comment'
+        )
+
+        url = 'https://qiwi.com/payment/form/99?amountInteger=12&' \
+              'amountFraction=74&currency=643&extra%5B%27comment%27%5D=test+comment'
+
+        self.assertEqual(res, url)
+
+        with self.assertRaises(ValueError):
+            self.api.fill_form(99, blocked='wrong')
+
     def test_method(self):
         res = self.api.method('person-profile/v1/profile/current')
         self.assertIsInstance(res, dict)

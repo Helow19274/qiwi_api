@@ -9,6 +9,8 @@ IDENTIFICATIONS = ['SIMPLE', 'VERIFIED', 'FULL']  #: Уровни идентиф
 
 STATUSES = ['WAITING', 'SUCCESS', 'ERROR']  #: Статусы платежей
 
+BLOCKABLE_FIELDS = ['sum', 'account', 'comment']  #: Поля формы, которые можно сделать неактивными
+
 
 class Providers(IntEnum):
     QIWI = 99  #: Киви
