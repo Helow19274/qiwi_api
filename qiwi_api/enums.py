@@ -5,6 +5,10 @@ OPERATIONS = ['ALL', 'IN', 'OUT', 'QIWI_CARD']  #: Типы операций
 
 SOURCES = ['QW_RUB', 'QW_USD', 'QW_EUR', 'CARD', 'MK']  #: Источники платежей
 
+IDENTIFICATIONS = ['SIMPLE', 'VERIFIED', 'FULL']  #: Уровни идентифицации
+
+STATUSES = ['WAITING', 'SUCCESS', 'ERROR']  #: Статусы платежей
+
 
 class Providers(IntEnum):
     QIWI = 99  #: Киви

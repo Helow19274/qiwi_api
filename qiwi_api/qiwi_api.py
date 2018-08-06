@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 import datetime
+
 import requests
 
+from .enums import OPERATIONS, SOURCES, Providers
 from .exceptions import ApiError, WrongToken, PermissionError
-from .enums import OPERATIONS, SOURCES
 
 
 class Qiwi(object):
@@ -18,14 +20,14 @@ class Qiwi(object):
     :param token: Ключ доступа к api
     :type token: str
     """
+    __slots__ = ('session', 'number')
 
     def __init__(self, token):
         self.session = requests.Session()
         self.session.headers['Accept'] = 'application/json'
         self.session.headers['Content-Type'] = 'application/json'
-        self.session.headers['Authorization'] = 'Bearer ' + token
+        self.session.headers['Authorization'] = 'Bearer {}'.format(token)
 
-        self.base = 'https://edge.qiwi.com/{}'
         self.number = self.get_profile(True, False, False)['authInfo']['personId']
 
     def __str__(self):
@@ -47,104 +49,64 @@ class Qiwi(object):
         :type user_info: bool
         """
 
-        url = self.base.format('person-profile/v1/profile/current')
+        url = 'person-profile/v1/profile/current'
         payload = {
             'authInfoEnabled': auth_info,
             'contractInfoEnabled': contract_info,
             'userInfoEnabled': user_info
         }
 
-        res = self.session.get(url, params=payload)
+        return self.method(url, payload)
 
-        if res.status_code == 401:
-            raise WrongToken('Wrong token')
-        elif res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
+    def get_identification(self):
+        """ Данные идентификации """
 
-        return res.json()
+        url = 'identification/v1/persons/{}/identification'
 
-    def send_qiwi(self, recipient, amount, comment=None):
-        """ Перевод на кошелёк Киви
+        return self.method(url.format(self.number))
 
-        :param recipient: Номер получателя в формате 71234567890
-        :type recipient: str
+    def identification(self, birth_date, first_name, middle_name, last_name,
+                       passport, inn=None, snils=None, oms=None):
+        """ Упрощённая идентификация
 
-        :param amount: Сумма в рублях. Минимум 1 рубль
-        :type amount: int or float
+        :param birth_date: Дата рождения в формате ГГГГ-ММ-ДД
+        :type birth_date: str
 
-        :param comment: Комментарий
-        :type comment: str
+        :param first_name: Имя
+        :type first_name: str
+
+        :param middle_name: Отчество
+        :type middle_name: str
+
+        :param last_name: Фамилия
+        :type last_name: str
+
+        :param passport: Серия и номер паспорта (цифры без пробела)
+        :type passport: str
+
+        :param inn: ИНН
+        :type inn: str
+
+        :param snils: СНИЛС
+        :type snils: str
+
+        :param oms: ОМС
+        :type oms: str
         """
 
-        url = self.base.format('sinap/api/v2/terms/99/payments')
+        url = 'identification/v1/persons/{}/identification'
         payload = {
-            'id': self._transaction_id(),
-            'sum': {
-                'amount': amount,
-                'currency': '643'
-            },
-            'paymentMethod': {
-                'type': 'Account',
-                'accountId': '643'
-            },
-            'fields': {
-                'account': recipient,
-            },
-            'comment': comment
+            'birthDate': birth_date,
+            'firstName': first_name,
+            'middleName': middle_name,
+            'lastName': last_name,
+            'passport': passport,
+            'inn': inn,
+            'snils': snils,
+            'oms': oms
         }
 
-        res = self.session.post(url, json=payload)
-
-        if res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
-
-        json = res.json()
-
-        if hasattr(json, 'message'):
-            raise ApiError(json['message'])
-
-        return json
-
-    def send_mobile(self, recipient, amount):
-        """ Оплата мобильной связи
-
-        :param recipient: Номер телефона для пополнения в формате 71234567890
-        :type recipient: str
-
-        :param amount: Сумма в рублях
-        :type amount: int or float
-        """
-
-        url = self.base.format('sinap/api/v2/terms/{}/payments')
-        payload = {
-            'id': self._transaction_id(),
-            'sum': {
-                'amount': amount,
-                'currency': '643'
-            },
-            'paymentMethod': {
-                'type': 'Account',
-                'accountId': '643'
-            },
-            'fields': {
-                'account': recipient[1:]
-            }
-        }
-
-        res = self.session.post(
-            url.format(self._detect_operator(recipient)),
-            json=payload
-        )
-
-        if res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
-
-        json = res.json()
-
-        if hasattr(json, 'message'):
-            raise ApiError(json['message'])
-
-        return json
+        return self.method(url.format(self.number), payload, 'post')
 
     def history(self, rows=10, operation='ALL', sources=None, from_date=None,
                 to_date=None, next_txn_date=None, next_txn_id=None):
@@ -185,7 +147,7 @@ class Qiwi(object):
         elif not isinstance(sources, list):
             sources = [sources]
 
-        url = self.base.format('payment-history/v2/persons/{}/payments')
+        url = 'payment-history/v2/persons/{}/payments'
         payload = {
             'rows': rows,
             'operation': operation,
@@ -204,12 +166,7 @@ class Qiwi(object):
 
             payload['sources[{}]'.format(x)] = source
 
-        res = self.session.get(url.format(self.number), params=payload)
-
-        if res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
-
-        return res.json()
+        return self.method(url.format(self.number), payload)
 
     def statistics(self, from_date, to_date, operation='ALL', sources=None):
         """ Получить статистику транзакций
@@ -236,7 +193,7 @@ class Qiwi(object):
         elif not isinstance(sources, list):
             sources = [sources]
 
-        url = self.base.format('payment-history/v2/persons/{}/payments/total')
+        url = 'payment-history/v2/persons/{}/payments/total'
         payload = {
             'startDate': self._format_date(from_date),
             'endDate': self._format_date(to_date),
@@ -252,12 +209,7 @@ class Qiwi(object):
 
             payload['sources[{}]'.format(x)] = source
 
-        res = self.session.get(url, params=payload)
-
-        if res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
-
-        return res.json()
+        return self.method(url.format(self.number), payload)
 
     def transaction_info(self, transaction_id):
         """ Получить информацию о транзакции
@@ -266,13 +218,9 @@ class Qiwi(object):
         :type transaction_id: int
         """
 
-        url = self.base.format('payment-history/v2/transactions/{}')
-        res = self.session.get(url.format(transaction_id))
+        url = 'payment-history/v2/transactions/{}'
 
-        if res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
-
-        return res.json()
+        return self.method(url.format(transaction_id))
 
     def balance(self, only_balance=False):
         """ Получить баланс кошельков
@@ -281,14 +229,9 @@ class Qiwi(object):
         :type only_balance: bool
         """
 
-        url = self.base.format('funding-sources/v2/persons/{}/accounts')
+        url = 'funding-sources/v2/persons/{}/accounts'
 
-        res = self.session.get(url.format(self.number))
-
-        if res.status_code == 403:
-            raise PermissionError('Not enough permissions to access this method')
-
-        json = res.json()['accounts']
+        json = self.method(url.format(self.number))['accounts']
 
         if only_balance:
             balances = []
@@ -302,17 +245,92 @@ class Qiwi(object):
         return json
 
     def comission(self, provider):
-        """ Узнать комиссионные условия провайдера
+        """ Комиссионные условия провайдера
 
         :param provider: id провайдера
         :type provider: str, int or :class:`Providers`
         """
 
-        url = self.base.format('sinap/providers/{}/form')
+        url = 'sinap/providers/{}/form'
 
-        res = self.session.get(url.format(provider))
+        if isinstance(provider, Providers):
+            provider = provider.value
 
-        return res.json()
+        return self.method(url.format(provider))
+
+    def send_qiwi(self, recipient, amount, comment=None):
+        """ Перевод на кошелёк Киви
+
+        :param recipient: Номер получателя в формате 71234567890
+        :type recipient: str
+
+        :param amount: Сумма в рублях. Минимум 1 рубль
+        :type amount: int or float
+
+        :param comment: Комментарий
+        :type comment: str
+        """
+
+        url = 'sinap/api/v2/terms/99/payments'
+        payload = {
+            'id': self._transaction_id(),
+            'sum': {
+                'amount': amount,
+                'currency': '643'
+            },
+            'paymentMethod': {
+                'type': 'Account',
+                'accountId': '643'
+            },
+            'fields': {
+                'account': recipient,
+            },
+            'comment': comment
+        }
+
+        json = self.method(url, payload, 'post')
+
+        if hasattr(json, 'message'):
+            raise ApiError(json['message'])
+
+        return json
+
+    def send_mobile(self, recipient, amount):
+        """ Оплата мобильной связи
+
+        :param recipient: Номер телефона для пополнения в формате 71234567890
+        :type recipient: str
+
+        :param amount: Сумма в рублях
+        :type amount: int or float
+        """
+
+        url = 'sinap/api/v2/terms/{}/payments'
+        payload = {
+            'id': self._transaction_id(),
+            'sum': {
+                'amount': amount,
+                'currency': '643'
+            },
+            'paymentMethod': {
+                'type': 'Account',
+                'accountId': '643'
+            },
+            'fields': {
+                'account': recipient[1:]
+            }
+        }
+
+        json = self.method(
+            url.format(self.detect_operator(recipient)),
+            payload,
+            'post'
+        )
+
+        if hasattr(json, 'message'):
+            raise ApiError(json['message'])
+
+        return json
 
     def method(self, method_name, payload=None, method='get'):
         """ Вызов метода API
@@ -326,7 +344,8 @@ class Qiwi(object):
         :param method: Метод запроса (get, post)
         :type method: str
         """
-        url = self.base.format(method_name)
+
+        url = 'https://edge.qiwi.com/{}'.format(method_name)
 
         if payload is None:
             payload = {}
@@ -334,23 +353,19 @@ class Qiwi(object):
         if method == 'get':
             res = self.session.get(url, params=payload)
         elif method == 'post':
+            if isinstance(payload, dict):
+                payload = json.dumps(payload, ensure_ascii=False)
+
             res = self.session.post(url, json=payload)
 
-        if res.status_code == 403:
+        if res.status_code == 401:
+            raise WrongToken('Wrong token')
+        elif res.status_code == 403:
             raise PermissionError('Not enough permissions to access this method')
 
         return res.json()
 
-    def _format_date(self, date):
-        if date:
-            return datetime.datetime.strptime(date, '%Y-%m-%d-%z').isoformat()
-
-        return None
-
-    def _transaction_id(self):
-        return str(int(datetime.datetime.utcnow().timestamp()) * 1000)
-
-    def _detect_operator(self, number):
+    def detect_operator(self, number):
         """ Узнать id оператора
 
         :param number: номер телефона в формате 71234567890
@@ -368,3 +383,12 @@ class Qiwi(object):
             raise ApiError('Can\'t detect phone operator')
 
         return json['message']
+
+    def _format_date(self, date):
+        if date:
+            return datetime.datetime.strptime(date, '%Y-%m-%d-%z').isoformat()
+
+        return None
+
+    def _transaction_id(self):
+        return str(int(datetime.datetime.utcnow().timestamp()) * 1000)

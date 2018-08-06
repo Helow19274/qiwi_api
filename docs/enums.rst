@@ -7,6 +7,10 @@ Enums
 
 .. autodata:: SOURCES
 
+.. autodata:: IDENTIFICATIONS
+
+.. autodata:: STATUSES
+
 .. module:: qiwi_api
 
 .. autoclass:: Providers
