@@ -1,0 +1,7 @@
+qiwi_api.egg-info/
+__pycache__/
+_build/
+build/
+dist/
+venv/
+main.py

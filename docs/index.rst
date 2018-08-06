@@ -24,6 +24,7 @@ qiwi_api - модуль для взаимодействия с Qiwi API
 
    qiwi_api
    enums
+   exceptions
 
 Indices and tables
 ==================
