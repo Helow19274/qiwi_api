@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
+import collections
 
 import requests
 
@@ -300,7 +301,7 @@ class Qiwi(object):
             blocked = [blocked]
 
         url = 'https://qiwi.com/payment/form/{}'
-        payload = {}
+        payload = collections.OrderedDict()
 
         if amount:
             if amount > 99999:
