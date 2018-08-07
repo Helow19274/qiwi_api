@@ -23,4 +23,4 @@ deploy:
   on:
     tags: true
     repo: Helow19274/qiwi_api
-    python: 3.6
+    python: '3.6.6'
