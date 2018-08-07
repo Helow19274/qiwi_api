@@ -1,12 +1,26 @@
-language: python
 sudo: true
 dist: xenial
+
+language: python
 python:
   - '3.5.5'
   - '3.6.6'
   - '3.7'
+
 install:
   - 'pip install -r requirements.txt'
   - 'pip install .'
   - 'pip install nose'
+
 script: nosetests
+
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: Helow19274
+  password:
+    secure: 'Bp+1qnwiYRh1JL06bXkkioP3bLSZ09rjI0ruQOaHIbYc7kvnWlWAERmLd4z1qqGE3hEZX5U+W8ncDbGAXovj7vcYqKb0iXcrqTL1SNPYTMshynyDLH1uAA0CghjncrsLzZ/06Iawp6Erb56Mms7u/+G9A4ozTK4tbqy00cBwi4mMhXxhP+Iy2E/vzNgl75jbERVYAaI0t0qyLsQMjxRZzLnJjfUq72HCz1tCgbYP9/ZEMuVP7kMZ7oXt0da5eWoIAU6eoo80k/6zuFK5a5KV7QYe7dCUAJwD/gP9IDZLdpFm2NvfeYo9AAlzTmBuV4+tFhgbKZejrAXtx3DNKZHp4FvriiaGnsg/vTNE3hifTvr+YfDQgvB4Qecot2chSoUTUJMqs9NKY2DDMRpxWBQxZRtyfXs+a2IMeL2J4Dneb8CIRquaOivLsLX2fUj81D9VjNdFMqvtwmjswz+98bgWiVcW/bph4w7gjzTFrYVsS6BSZg9tk6mZC5J6bhQblqaLCB6D13nMCBTd0/g5CM4wQEebI3laby8jCBCRy0JuVnW5amWQ8kkV6OTONKwRVBUNWlpIySFruOuVrCDPSqkc4FuuxTjNZAW3X6VsoFxkwiteufnF0re2cZuQYM2HvglAWvm9IHOr2eglQZu6XtYhbYb5SYpstREeUBje2crRrT8='
+  on:
+    tags: true
+    repo: Helow19274/qiwi_api
+    python: 3.6
