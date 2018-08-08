@@ -6,8 +6,9 @@ from qiwi_api.exceptions import WrongToken
 
 
 class TestApi(unittest.TestCase):
-    def setUp(self):
-        self.api = Qiwi(os.environ['TOKEN'])
+    @classmethod
+    def setUpClass(cls):
+        cls.api = Qiwi(os.environ['TOKEN'])
 
     def test_bad_token(self):
         with self.assertRaises(WrongToken):
