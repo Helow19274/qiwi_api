@@ -438,6 +438,10 @@ class Qiwi(object):
             raise WrongToken('Wrong token')
         elif res.status_code == 403:
             raise PermissionError('Not enough permissions to access this method')
+        elif res.status_code == 404:
+            raise ApiError('Wallet or invoice not found')
+        elif res.status_code == 423:
+            raise ApiError('Too many requests')
 
         return res.json()
 

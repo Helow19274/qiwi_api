@@ -78,8 +78,6 @@ class TestApi(unittest.TestCase):
         res2 = self.api.balance(only_balance=True)
         self.assertIsInstance(res2, list)
 
-        self.assertLess(len(res2), len(res))
-
     def test_comission(self):
         res = self.api.comission(Providers.QIWI)
         self.assertIsInstance(res, dict)
