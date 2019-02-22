@@ -3,9 +3,9 @@ dist: xenial
 
 language: python
 python:
-  - '3.5.5'
-  - '3.6.6'
-  - '3.7'
+  - '3.5.6'
+  - '3.6.8'
+  - '3.7.2'
   - 'pypy3.5'
 
 cache:
@@ -27,4 +27,4 @@ deploy:
   on:
     tags: true
     repo: Helow19274/qiwi_api
-    python: '3.6.6'
+    python: '3.6.8'
