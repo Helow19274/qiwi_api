@@ -1,4 +1,4 @@
-qiwi_api [![Travis](https://img.shields.io/travis/Helow19274/qiwi_api.svg)](https://travis-ci.org/Helow19274/qiwi_api/) [![Docs](https://img.shields.io/readthedocs/qiwi_api.svg)](https://qiwi-api.readthedocs.io/ru/latest/) [![PyPI](https://img.shields.io/pypi/v/qiwi_api.svg)](https://pypi.org/project/qiwi-api/) ![Python Version](https://img.shields.io/pypi/pyversions/qiwi_api.svg)
+qiwi_api [![Travis](https://img.shields.io/travis/Helow19274/qiwi_api.svg)](https://travis-ci.org/Helow19274/qiwi_api/) [![Docs](https://img.shields.io/readthedocs/qiwi-api.svg)](https://qiwi-api.readthedocs.io/ru/latest/) [![PyPI](https://img.shields.io/pypi/v/qiwi_api.svg)](https://pypi.org/project/qiwi-api/) ![Python Version](https://img.shields.io/pypi/pyversions/qiwi_api.svg)
 =====
 
 qiwi_api - модуль для взаимодействия с Qiwi API
