@@ -34,7 +34,7 @@ class TestApi(unittest.TestCase):
         self.assertIsInstance(res, dict)
 
         self.assertEqual(res['id'], int(os.environ['NUMBER']))
-        self.assertEqual(res['type'], 'SIMPLE')
+        self.assertEqual(res['type'], 'ANONYMOUS')
 
     def test_history(self):
         res = self.api.history(rows=1)

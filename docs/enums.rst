@@ -7,10 +7,6 @@ Enums
 
 .. autodata:: SOURCES
 
-.. autodata:: IDENTIFICATIONS
-
-.. autodata:: STATUSES
-
 .. autodata:: BLOCKABLE_FIELDS
 
 .. module:: qiwi_api

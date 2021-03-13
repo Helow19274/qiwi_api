@@ -1,30 +1,28 @@
-sudo: true
-dist: xenial
+dist: focal
 
 language: python
-python:
-  - '3.5.6'
-  - '3.6.8'
-  - '3.7.2'
-  - 'pypy3.5'
 
-cache:
-  pip
+python:
+  - 3.5.9
+  - 3.6.9
+  - 3.7.9
+  - 3.8.7
+  - 3.9.1
+  - pypy3.6-7.3.3
 
 install:
-  - 'pip install -r requirements.txt'
-  - 'pip install .'
-  - 'pip install nose'
+  - pip install .
+  - pip install nose
 
 script: nosetests
 
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
-  user: Helow19274
+  username: '__token__'
   password:
-    secure: 'Bp+1qnwiYRh1JL06bXkkioP3bLSZ09rjI0ruQOaHIbYc7kvnWlWAERmLd4z1qqGE3hEZX5U+W8ncDbGAXovj7vcYqKb0iXcrqTL1SNPYTMshynyDLH1uAA0CghjncrsLzZ/06Iawp6Erb56Mms7u/+G9A4ozTK4tbqy00cBwi4mMhXxhP+Iy2E/vzNgl75jbERVYAaI0t0qyLsQMjxRZzLnJjfUq72HCz1tCgbYP9/ZEMuVP7kMZ7oXt0da5eWoIAU6eoo80k/6zuFK5a5KV7QYe7dCUAJwD/gP9IDZLdpFm2NvfeYo9AAlzTmBuV4+tFhgbKZejrAXtx3DNKZHp4FvriiaGnsg/vTNE3hifTvr+YfDQgvB4Qecot2chSoUTUJMqs9NKY2DDMRpxWBQxZRtyfXs+a2IMeL2J4Dneb8CIRquaOivLsLX2fUj81D9VjNdFMqvtwmjswz+98bgWiVcW/bph4w7gjzTFrYVsS6BSZg9tk6mZC5J6bhQblqaLCB6D13nMCBTd0/g5CM4wQEebI3laby8jCBCRy0JuVnW5amWQ8kkV6OTONKwRVBUNWlpIySFruOuVrCDPSqkc4FuuxTjNZAW3X6VsoFxkwiteufnF0re2cZuQYM2HvglAWvm9IHOr2eglQZu6XtYhbYb5SYpstREeUBje2crRrT8='
+    secure: 'u+IIma92ZzBQRdVV+LXO4QG/ncL4L8OHXsd8EApoo6zKd5bBA/W+iScqa6R2mES9KjxIhuhuhbDUBntoLhEYrU9VEklurd6fFqfLWObJ1AHCH90q5DMaZc4kZ+K7FA3NkULDN1RtMi+tf6jC6Pgycx2ho+7Io5WQYM6wa5DRUW0ObwvWcjSbWxQD5GJfglE6ppbaROYH8MfMAHg0oHqmjTglhOrSyzDS8uVBIuZ4oc3ux92C1zw2dgHgK5phGn05kcTKgP1B/ltEMhsnKkjlgT3tlnX6WWSvZS+CR1zY5FCXrW1hDrB4OXcZQel8z3QM4H0xhBKEwGD4UJ6PaoPynOU3XEOP7hEQlxQwh+OlI4mJB+gQ5+KIayDo4HJ42LrZCbtkY2XKghm17gAyS8mDQzokM0IQGUpYsrbLaA6c12l422qpiTywHzsAF2hZHBg6cgxLzMK99hvq27IIm4dk5zWikLgZFq0oOsMuSJ1JHhWJWScL2dAoy8nc57ltZPECTgI+aw31a1R7qwIvMJHz/KIYyOj8BY206owVr/iJtgorhMlO6j4TwoKfGfXFgWm38oozeiA6tXSFvvry59UXKJQRi73mtTWeTpOGPImLaRHC6lZKVxq0Wh6YCnP4Cl7ITJDK5jzQhDWdodrVU02M/V5VL3RWG/SsEo0Jq8QkuRk='
   on:
     tags: true
     repo: Helow19274/qiwi_api
-    python: '3.6.8'
+    python: 3.9.1

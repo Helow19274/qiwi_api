@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
 from enum import IntEnum
 
 OPERATIONS = ['ALL', 'IN', 'OUT', 'QIWI_CARD']  #: Типы операций
 
 SOURCES = ['QW_RUB', 'QW_USD', 'QW_EUR', 'CARD', 'MK']  #: Источники платежей
-
-IDENTIFICATIONS = ['SIMPLE', 'VERIFIED', 'FULL']  #: Уровни идентифицации
-
-STATUSES = ['WAITING', 'SUCCESS', 'ERROR']  #: Статусы платежей
 
 BLOCKABLE_FIELDS = ['sum', 'account', 'comment']  #: Поля формы, которые можно сделать неактивными
 

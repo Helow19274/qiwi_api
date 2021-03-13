@@ -20,7 +20,7 @@ import qiwi_api
 # -- Project information -----------------------------------------------------
 
 project = 'qiwi_api'
-copyright = '2018, Helow19274'
+copyright = '2021, Helow19274'
 author = 'Helow19274'
 
 # The short X.Y version
